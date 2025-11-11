@@ -1,6 +1,7 @@
 # CALoRa
 Chirp-Aware Self-Attention for Robust LoRa Preamble Detection under Ultra-Low SNR
 
-TEST PUSHING
-
-TEST  PUSHING2
+- Symbol Restoration
+- Enhanced Preamble Detection
+- CNN
+- Transformer Encoder (Self-attention)
