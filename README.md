@@ -3,9 +3,9 @@ Chirp-Aware Self-Attention for Robust LoRa Preamble Detection under Ultra-Low SN
 
 <img src="https://img.shields.io/badge/-python3.11-3776AB?style=flat&logo=python&logoColor=white"/> <img src="https://img.shields.io/badge/-pytorch-EE4C2C?style=flat&logo=PyTorch&logoColor=white"/> <img src="https://img.shields.io/badge/-IQ Signal-8CAAE6?style=flat&logo=scipy&logoColor=white"/> <img src ="https://img.shields.io/badge/-Spectrogram-7B16FF?style=flat&logo=spectrum&logoColor=white"/>
 
-- Symbol Restoration
-- Enhanced Preamble Detection
-- Restore-then-Detect
+- **Symbol Restoration**
+- **Enhanced Preamble Detection**
+- **Restore-then-Detect**
 - Convolutional Neural Network (CNN)
 - Transformer Encoder (Self-attention)
 
