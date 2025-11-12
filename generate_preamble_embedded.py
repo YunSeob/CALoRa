@@ -7,8 +7,6 @@ import argparse
 from LoRa import LoRa
 import random
 
-bw = 125000
-
 def create_lora_packet(sf: int) -> list:
     packet = [0]*8
     # packet.extend([random.randint(0,3) for _ in range(2)])
@@ -23,9 +21,9 @@ def create_lora_packet(sf: int) -> list:
 
 def generate_packet_with_noise(sf, bw, generate_size, target_snr=-5):
     lora_init = LoRa(sf,bw)
-    sym_count = 0
-    sym_index = 100
+    sym_index = 0
     root_path = f'./data_symbol/preamble_train/sf{str(sf)}/gen_symbol/'
+    os.makedirs(root_path, exist_ok=True)
     for i in range(generate_size):
         packet_chirp = np.zeros((int(2**sf)*8*20), dtype=np.complex128)
         packet_list = create_lora_packet(sf)
@@ -70,13 +68,14 @@ if __name__ == "__main__":
     print(f"----------------------\n")
 
     snr_list = list(range(-40,1))
+    bw = 125000
     for i in range(3):
         sf = i + 7
         lora_init = LoRa(i+7,bw)
         for j in range(len(snr_list)):
             snr = snr_list[j]
             print(f"[진행상황] SF={sf}, SNR={snr} dB에서 패킷 {args.generate_size}개 생성 중...")
-            generate_packet_with_noise(sf, generate_size=args.generate_size, target_snr=snr)
+            generate_packet_with_noise(sf, bw, generate_size=args.generate_size, target_snr=snr)
         print(f'[완료] SF={sf} 완료 ✅\n')
 
     print("--- 모든 작업 완료 ---")
