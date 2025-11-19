@@ -275,8 +275,8 @@ for epoch in range(num_epochs):
                     best_val_loss = val_loss_avg
                     print(f"📅 [Iteration {iteration}] Best val model saved with val_loss: {val_loss_avg:.6f}")
                     # 파일 이름을 'best_val'로 명확하게 변경
-                    torch.save(calora.state_dict(), os.path.join(opts.save_dir, f'best_val_sf{opts.sf}_denoising_calora.pth'))
-                    torch.save(C_XtoY.state_dict(), os.path.join(opts.save_dir, f'best_val_sf{opts.sf}_classification_calora.pth'))
+                    torch.save(calora.state_dict(), os.path.join(opts.save_dir, f'./weights/best_val_sf{opts.sf}_denoising_calora.pth'))
+                    torch.save(C_XtoY.state_dict(), os.path.join(opts.save_dir, f'./weights/best_val_sf{opts.sf}_classification_calora.pth'))
             
             # torch.cuda.empty_cache() # OOM 발생 시에만 제한적으로 사용
 
@@ -285,7 +285,7 @@ for epoch in range(num_epochs):
 
         # 💡 [수정 10] 주기적인 체크포인트 저장 로직
         # (기존의 training loss 기반 저장을 대체)
-        if (iteration % 200)==0 and (iteration <= 50000):
+        if (iteration % 10000)==0 and (iteration <= 50000):
             print(f"✅ [Iteration {iteration}] Periodic checkpoint saved.")
             torch.save(calora.state_dict(), os.path.join(opts.save_dir, f'./weights_history/ckpt_sf{opts.sf}_denoising_iter{iteration}_calora.pth'))
             torch.save(C_XtoY.state_dict(), os.path.join(opts.save_dir, f'./weights_history/ckpt_sf{opts.sf}_classification_iter{iteration}_calora.pth'))
