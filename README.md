@@ -38,7 +38,7 @@ In Low-Power Wide-Area Networks (LPWANs) such as LoRa, the preamble is essential
 * Pytorch 2.1.0
 
 ## ⚙️ 설치 방법 (Installation)
-이 프로젝트를 실행하기 위해 먼저 저장소를 클론하고 필수 라이브러리를 설치해주세요.
+이 프로젝트를 실행하기 위해 먼저 저장소를 클론하고 필수 라이브러리를 설치해야 함
 
 ```bash
 git clone https://github.com/YunSeob/CALoRa.git
@@ -48,8 +48,6 @@ pip install -r requirements.txt
 
 ## 🚀사용 방법 (Usage)
 
-<h4>Generating Datasets</h4>
-
 ### 📡 Generating Datasets 
 **1. 신호 사양 (Signal Specs)** 
 * **Bandwidth** : 125 kHz 
@@ -57,13 +55,13 @@ pip install -r requirements.txt
 * **Modulation:** LoRa Symbol IQ Signal 
   
 **2. 실행 옵션 (Usage)** 
-* **`--symbol`**: 신호의 노이즈 여부를 결정합니다. 
+* **`--symbol`**: 신호의 노이즈 여부를 결정
 	* *Noisy* : SNR [-40, 0] dB 
 	* *Clean* : SNR 35 dB 
-* **`--generate_size`**: SNR 별 생성할 데이터 수를 정의합니다. (Default: 32,768) 
+* **`--generate_size`**: SNR 별 생성할 데이터 수를 정의 (Default: 32,768) 
 
 **3. 출력 (Output)** 
-데이터는 `./data_symbol/sfX/gen_symbol/` 폴더에 `.mat` 형식으로 저장됩니다. 
+데이터는 `./data_symbol/sfX/gen_symbol/` 폴더에 `.mat` 형식으로 저장 
 * **파일명 규칙:** `{sym_index}_{snr}_{sf}_{bw}_0_{val}_0_0.mat`
 
 ```bash
@@ -73,13 +71,30 @@ python generate_symbols.py --symbol noisy --generate_size 1000
 # Clean 심볼 생성 (generate_size default : 32768)
 python generate_symbols.py --symbol clean --generate_size 1000
 ```
+
 * 프리앰블이 포함된 데이터 생성
+1. **프레임 구성**
+	- Preamble (8 Symbols) + Down-chirp (2 Symbols) + Payload (10 Symbols)
+	- Payload는 임의의 값으로 구성된 심볼
+	- SNR 범위 : [-40,0]
+
+2.  **실행 옵션 (Usage)**
+	- --generate_size : SNR 별 생성할 데이터 수를 정의 (Default: 100)
+
+3. **출력 (Output)**
+	- 데이터는 `./data_symbol/preamble_train/sfX/gen_symbol/` 폴더에 `.mat` 형식으로 저장
+	- **파일명 규칙** : `{sym_index}_{snr}_{sf}_{bw}_0_{payload list}_0_0.mat`
 
 ```bash
-
+python generate_preamble_embedded.py --generate_size 100
 ```
 
-<h4>Train</h4>
+### 📡 Train
+Symbol Restoration 모델을 학습하기 위해 다음 명령어를 통해 학습을 진행
+
+```bash
+python train.py --sf 7 --train_iters 1000000
+```
 
 <h4>Prediction</h4>
 - `predict.ipynb` 참고
@@ -87,8 +102,13 @@ python generate_symbols.py --symbol clean --generate_size 1000
 ## 📂 폴더 구조 (Directory Structure)
 ```bash
 . 
-├── data/ # 데이터셋 폴더 
-├── models/ # 모델 코드 
+├── datasets/ # 데이터셋 폴더 
+├── images/
+├── models/ # 모델 코드
+├── LoRa.py # util 코드 
+├── generate_preamble_embedded.py # 프리앰블이 포함된 IQ 신호 생성 코드
+├── generate_symbols.py # LoRa 심볼 생성 코드
 ├── train.py # 학습 실행 파일 
+├── predict.ipynb # Symbol Restoration 예측 및 성능 평가
 └── README.md # 프로젝트 설명서
 ```
