@@ -105,7 +105,7 @@ python train.py --sf 7 --train_iters 1000000
 ├── datasets/ # 데이터셋 폴더 
 ├── images/
 ├── models/ # 모델 코드
-├── LoRa.py # util 코드 
+├── LoRa.py # LoRa util 코드 
 ├── generate_preamble_embedded.py # 프리앰블이 포함된 IQ 신호 생성 코드
 ├── generate_symbols.py # LoRa 심볼 생성 코드
 ├── train.py # 학습 실행 파일 
