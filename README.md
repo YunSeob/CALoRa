@@ -49,10 +49,11 @@ pip install -r requirements.txt
 ## 🚀사용 방법 (Usage)
 
 <h4>Generating Datasets</h4>
+
 ### 📡 Generating Datasets 
 **1. 신호 사양 (Signal Specs)** 
-* **Bandwidth:** 125 kHz 
-* **Sampling Rate:** 1 MHz 
+* **Bandwidth** : 125 kHz 
+* **Sampling Rate** : 1 MHz 
 * **Modulation:** LoRa Symbol IQ Signal 
   
 **2. 실행 옵션 (Usage)** 
