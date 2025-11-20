@@ -49,7 +49,6 @@ pip install -r requirements.txt
 ## 🚀사용 방법 (Usage)
 
 <h4>Generating Datasets</h4>
-```markdown
 ### 📡 Generating Datasets 
 **1. 신호 사양 (Signal Specs)** 
 * **Bandwidth:** 125 kHz 
@@ -58,20 +57,14 @@ pip install -r requirements.txt
   
 **2. 실행 옵션 (Usage)** 
 * **`--symbol`**: 신호의 노이즈 여부를 결정합니다. 
-	* *Noisy*: SNR [-40, 0] dB 
-	* *Clean*: SNR 35 dB 
+	* *Noisy* : SNR [-40, 0] dB 
+	* *Clean* : SNR 35 dB 
 * **`--generate_size`**: SNR 별 생성할 데이터 수를 정의합니다. (Default: 32,768) 
 
 **3. 출력 (Output)** 
 데이터는 `./data_symbol/sfX/gen_symbol/` 폴더에 `.mat` 형식으로 저장됩니다. 
 * **파일명 규칙:** `{sym_index}_{snr}_{sf}_{bw}_0_{val}_0_0.mat`
-```
-* 심볼 데이터 생성
-1. Bandwidth = 125 *k*Hz 기준, Sampling Rate = 1 *M*Hz인 LoRa 심볼 IQ 신호 생성
-2. --symbol을 통해 noisy 신호(SNR 범위 : [-40,0])와 clean 신호 (SNR : 35 dB)를 생성 가능
-3. --generate_size를 통해 SNR 별 생성할 신호 데이터 수 정의 (default : 32768)
-4. 생성되는 신호는 './data_symbol/sf**X**/gen_symbol/' 폴더에 저장됨
-5. 파일명 : `{sym_index}_{snr}_{sf}_{bw}_0_{val}_0_0.mat`
+
 ```bash
 # Noisy 심볼 생성 (generate_size default : 32768)
 python generate_symbols.py --symbol noisy --generate_size 1000
