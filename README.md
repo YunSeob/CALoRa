@@ -48,7 +48,7 @@ pip install -r requirements.txt
 
 ## 🚀사용 방법 (Usage)
 
-### 📡 Generating Datasets 
+### 📡Generating Datasets 
 **1. 신호 사양 (Signal Specs)** 
 * **Bandwidth** : 125 kHz 
 * **Sampling Rate** : 1 MHz 
