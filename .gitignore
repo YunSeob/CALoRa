@@ -10,4 +10,5 @@
 
 *.pth
 *.csv
-./정리노트.md
+정리노트.md
+*.canvas
