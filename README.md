@@ -20,6 +20,7 @@ This repository contains the official implementation of the paper: **"[Chirp-Awa
 In Low-Power Wide-Area Networks (LPWANs) such as LoRa, the preamble is essential for detecting highly attenuated signals. Its repetitive pattern allows a receiver to identify the presence of the signal and its precise starting point. However, in ultra-low Signal-to-Noise Ratio (SNR) environments, the preamble becomes undetectable as it is buried in strong noise, causing the entire detection process to fail. Although existing methods, such as those based on preamble symbol energy accumulation or deep learning-based spectrogram restoration, have been proposed, their performance remains limited under these extreme conditions. To address this limitation, this paper proposes a novel two-stage preamble detection scheme. The first stage employs a Convolutional-Transformer Encoder-Deconvolutional network that leverages self-attention to capture the distinct linear patterns of chirp signals even in the presence of severe noise. In the second stage, a classifier determines the presence of the preamble. Experimental results demonstrate that our proposed method significantly outperforms conventional approaches, lowering the minimum required SNR for preamble detection. To validate its performance, we utilized metrics including True Positive Rate (TPR) and F-scores. Under these evaluations, our scheme achieves a detection accuracy of over 90% in the ultra-low SNR range of -21.7 dB to -24.3 dB, confirming its robustness and practical viability.
 
 
+
 ![모델 구조](./images/Figure_architecture.png)
 
 
@@ -46,7 +47,7 @@ cd CALoRa
 pip install -r requirements.txt
 ```
 
-## 🚀사용 방법 (Usage)
+## 🚀Usage
 
 ### 📡Generating Datasets 
 **1. Signal Specification** 
@@ -85,7 +86,7 @@ The generated LoRa frames are structured as follows:
 2.  **Usage Arguments**
 	- **--generate_size** : Defines the number of data samples generated for each SNR level (Default: 100).
 
-3. **출력 (Output)**
+3. **Output**
 	- The output files are stored in `.mat` format within the `./data_symbol/preamble_train/sfX/gen_symbol/` 
 	- **File Naming Rule** : `{sym_index}_{snr}_{sf}_{bw}_0_{payload list}_0_0.mat`
 
@@ -147,8 +148,13 @@ We provide Jupyter Notebooks for model inference and detailed performance analys
 ```
  %%
 
-## Notes
-```cff
+## Acknowledgement
+This code is built upon the official implementation of **NELoRa**. We appreciate their contributions to the open-source community.
+- NELoRa Repository: [Github Link Here](https://github.com/hanqingguo/NELoRa-Sensys)
+
+## Citation
+If you find this work useful in your research, please consider citing our paper:
+```bibtex
 @article{kim2026chirp,
   title={Chirp-Aware Self-Attention for Robust LoRa Preamble Detection under Ultra-Low SNR},
   author={Kim, Yun-Seob and Byeon, Seunggyu and Kim, Dong-Hyun and Hasegawa, Mikio and Kim, Jong-Deok},
@@ -157,5 +163,3 @@ We provide Jupyter Notebooks for model inference and detailed performance analys
   publisher={IEEE}
 }
 ```
-
-Acknowledgement 
