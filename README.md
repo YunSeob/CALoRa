@@ -100,6 +100,7 @@ python train.py --sf 7 --train_iters 1000000
 
 <h4>Prediction</h4>
 - `predict.ipynb` 참고
+
 ## 📂 폴더 구조 (Directory Structure)
 ```
 . 
