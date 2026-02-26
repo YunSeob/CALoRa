@@ -21,16 +21,15 @@ parser = argparse.ArgumentParser(description="Training")
 parser.add_argument('--sf',
                         type=int, 
                         default=7, 
-                        help="Spreading Factor (기본값 : 7)")
+                        help="Spreading Factor (Default : 7)")
 
 parser.add_argument('--train_iters', 
                         type=int, 
                         default=100000, 
-                        help="Epochs (기본값 : 100000)")
+                        help="Epochs (Default : 100000)")
 
 args = parser.parse_args()
 
-# Define dummy options class for maskCNNModel
 class Opts:
     # LoRa Configuration
     sf=args.sf
@@ -71,7 +70,6 @@ class Opts:
     # Path Configuration
     root_path='./'
     data_dir = f'./data_symbol/sf{sf}/gen_symbol'
-    # data_dir = f'./data_symbol/sf{sf}/gen_symbol_new'
     save_dir = './'
 
     # Chirp Configuration
@@ -125,10 +123,9 @@ files_train_split, files_val_split = train_test_split(
 validation_dataloader_X, _ = data_loader.lora_loader(opts, files_val_split, files_test, False)
 validation_dataloader_Y, _ = data_loader.lora_loader(opts, files_val_split, files_test, True)
 
-# Loss 정의
+# Loss
 loss_spec = torch.nn.MSELoss(reduction='mean')
 loss_class = nn.CrossEntropyLoss()
-# device는 이미 위에서 정의됨
 
 # Model
 calora = CALoRa().to(device)
@@ -160,14 +157,14 @@ fixed_Y_spectrum = spec_to_network_input(fixed_Y_spectrum_raw, opts)
 iter_per_epoch = min(len(iter_X), len(iter_Y))
 
 
-# 초기 설정
-best_loss = float('inf') # training loss 추적용 (주기적 저장 외에 사용 안 함)
-best_val_loss = float('inf') # 💡 'Best Model' 저장을 위한 validation loss
+# Init
+best_loss = float('inf') 
+best_val_loss = float('inf') 
 csv_log_path = os.path.join(opts.save_dir, f'training_log_enhanced_sf{opts.sf}_calora.csv')
 os.makedirs(opts.save_dir, exist_ok=True)
-os.makedirs(os.path.join(opts.save_dir, './weights_history/'), exist_ok=True) # 히스토리 폴더 생성
+os.makedirs(os.path.join(opts.save_dir, './weights_history/'), exist_ok=True)
 
-# CSV 파일 헤더 작성
+# CSV File header
 with open(csv_log_path, mode='w', newline='') as f:
     writer = csv.writer(f)
     writer.writerow(['iteration', 'G_Y_loss', 'G_Image_loss', 'G_Class_loss', 'Best_Val_Loss'])
@@ -185,21 +182,11 @@ for epoch in range(num_epochs):
         labels_X_mapping = list(map(lambda x: int(x.split('_')[5]), name_X))
         labels_Y_mapping = list(map(lambda x: int(x.split('_')[5]), name_Y))
 
-        # 💡 [수정 6] to_var 대신 .to(device) 사용
         images_X = images_X.to(device)
         labels_X = torch.tensor(labels_X_mapping).to(device)
         images_Y = images_Y.to(device)
         labels_Y = torch.tensor(labels_Y_mapping).to(device)
         
-        # --------------------------------------------------------------------
-        # ⚠️ [경고] 성능 병목 지점 (Performance Bottleneck)
-        # 아래의 torch.stft 연산은 매 이터레이션마다 GPU에서 실행됩니다.
-        # 이는 학습 속도를 매우 느리게 만듭니다.
-        #
-        # [권장] 이 로직을 `data_loader.py`의 `Dataset` 클래스 내 `__getitem__` 함수로
-        #       이동시키세요. DataLoader의 num_workers가 이 전처리를
-        #       CPU에서 병렬로 수행하여 GPU가 학습에만 집중할 수 있게 합니다.
-        # --------------------------------------------------------------------
         images_X_spectrum_raw = torch.stft(images_X, n_fft=opts.stft_nfft, hop_length=opts.stft_overlap,
                                            win_length=opts.stft_window, pad_mode='constant')
         images_X_spectrum = spec_to_network_input(images_X_spectrum_raw, opts)
@@ -207,7 +194,6 @@ for epoch in range(num_epochs):
         images_Y_spectrum_raw = torch.stft(images_Y, n_fft=opts.stft_nfft, hop_length=opts.stft_overlap,
                                            win_length=opts.stft_window, pad_mode='constant')
         images_Y_spectrum = spec_to_network_input(images_Y_spectrum_raw, opts)
-        # --------------------------------------------------------------------
 
         # Forward
         fake_Y_spectrum = calora(images_X_spectrum)
@@ -232,7 +218,6 @@ for epoch in range(num_epochs):
             calora.eval()
             C_XtoY.eval()
 
-            # 💡 [수정 7] torch.no_grad()로 감싸서 메모리 절약 및 속도 향상
             with torch.no_grad():
                 val_iter_Y = iter(validation_dataloader_Y)
                 for val_images_X, val_name_X in validation_dataloader_X:
@@ -245,13 +230,11 @@ for epoch in range(num_epochs):
                     val_labels_X_mapping = list(map(lambda x: int(x.split('_')[5]), val_name_X))
                     val_labels_Y_mapping = list(map(lambda x: int(x.split('_')[5]), val_name_Y))
 
-                    # 💡 [수정 8] to_var 대신 .to(device) 사용
                     val_images_X = val_images_X.to(device)
                     val_labels_X = torch.tensor(val_labels_X_mapping).to(device)
                     val_images_Y = val_images_Y.to(device)
                     val_labels_Y = torch.tensor(val_labels_Y_mapping).to(device)
 
-                    # ⚠️ [경고] 여기도 STFT 병목 지점입니다. (위의 경고와 동일)
                     val_images_X_spectrum = spec_to_network_input(
                         torch.stft(val_images_X, n_fft=opts.stft_nfft, hop_length=opts.stft_overlap,
                                    win_length=opts.stft_window, pad_mode='constant'), opts)
@@ -261,7 +244,7 @@ for epoch in range(num_epochs):
                                    win_length=opts.stft_window, pad_mode='constant'), opts)
 
                     val_fake_Y = calora(val_images_X_spectrum)
-                    # Validation에서는 이미지(스펙트로그램) 복원 손실만 계산
+
                     val_loss = loss_spec(val_fake_Y, val_images_Y_spectrum)
 
                     val_loss_total += val_loss.item()
@@ -269,41 +252,31 @@ for epoch in range(num_epochs):
 
             if val_batches > 0:
                 val_loss_avg = val_loss_total / val_batches
-                
-                # 💡 [수정 9] Best Model 저장 기준을 validation loss로 변경
+
                 if val_loss_avg < best_val_loss:
                     best_val_loss = val_loss_avg
                     print(f"📅 [Iteration {iteration}] Best val model saved with val_loss: {val_loss_avg:.6f}")
-                    # 파일 이름을 'best_val'로 명확하게 변경
                     torch.save(calora.state_dict(), os.path.join(opts.save_dir, f'./weights/best_val_sf{opts.sf}_denoising_calora.pth'))
                     torch.save(C_XtoY.state_dict(), os.path.join(opts.save_dir, f'./weights/best_val_sf{opts.sf}_classification_calora.pth'))
-            
-            # torch.cuda.empty_cache() # OOM 발생 시에만 제한적으로 사용
 
             calora.train()
             C_XtoY.train()
 
-        # 💡 [수정 10] 주기적인 체크포인트 저장 로직
-        # (기존의 training loss 기반 저장을 대체)
         if (iteration % 10000)==0 and (iteration <= 50000):
             print(f"✅ [Iteration {iteration}] Periodic checkpoint saved.")
             torch.save(calora.state_dict(), os.path.join(opts.save_dir, f'./weights_history/ckpt_sf{opts.sf}_denoising_iter{iteration}_calora.pth'))
             torch.save(C_XtoY.state_dict(), os.path.join(opts.save_dir, f'./weights_history/ckpt_sf{opts.sf}_classification_iter{iteration}_calora.pth'))
 
-        # 💡 [수정 11] G_Y_loss.item() < best_loss 조건 제거
-        # (Best 모델은 위에서 val_loss 기준으로 저장)
-        # 훈련 손실(best_loss)을 단순히 추적만 할 경우 아래 코드 사용
         if G_Y_loss.item() < best_loss:
             best_loss = G_Y_loss.item()
 
 
-        # 로그 기록
+        # Log
         with open(csv_log_path, mode='a', newline='') as f:
             writer = csv.writer(f)
-            # CSV에도 best_val_loss를 기록하도록 변경
             writer.writerow([iteration, G_Y_loss.item(), G_Image_loss.item(), G_Class_loss.item(), best_val_loss])
 
-        # 콘솔 출력
+        # Console
         if iteration % opts.log_step == 0:
             print(f'Iteration [{iteration:5d}/{opts.train_iters:5d}] | G_Y_loss: {G_Y_loss.item():.4f} '
                   f'| G_Image_loss: {G_Image_loss.item():.4f} | G_Class_loss: {G_Class_loss:.4f} | Best_Val_loss: {best_val_loss:.4f}')
