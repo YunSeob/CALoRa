@@ -3,38 +3,24 @@ Chirp-Aware Self-Attention for Robust LoRa Preamble Detection under Ultralow SNR
 
 <img src="https://img.shields.io/badge/-python3.10-3776AB?style=flat&logo=python&logoColor=white"/> <img src="https://img.shields.io/badge/-pytorch-EE4C2C?style=flat&logo=PyTorch&logoColor=white"/> <img src="https://img.shields.io/badge/-IQ Signal-8CAAE6?style=flat&logo=scipy&logoColor=white"/> <img src ="https://img.shields.io/badge/-Spectrogram-7B16FF?style=flat&logo=spectrum&logoColor=white"/>
 
-- **Symbol Restoration**
-- **Enhanced Preamble Detection**
-- **Restore-then-Detect**
-- Convolutional Neural Network (CNN)
-- Transformer Encoder (Self-attention)
-
 This repository contains the official implementation of the paper: **"Chirp-Aware Self-Attention for Robust LoRa Preamble Detection under Ultralow SNR"**, accepted in _IEEE Internet of Things Journal (2026)_.
 
-## 🚀 Key Features
-- **Robust Detection:** Achieves high detection probability even in ultra-low SNR environments (e.g., -20dB).
+## 💡 Key Features
+- - **Enhanced Preamble Detection**: Achieves high detection probability even in ultra-low SNR environments (e.g., under -20dB).
+	-  **Symbol Restoration**
     
 - **Chirp-Aware Mechanism:** Utilizes a novel self-attention module to effectively capture LoRa chirp characteristics.
+	- **Convolutional Neural Network (CNN)**
+	- **Transformer Encoder (Self-attention)**
     
 - **End-to-End Pipeline:** Includes full support for signal generation, channel simulation, and model training.
+	- **Restore-then-Detect**
 
 <h2>Abstract</h2>
 In Low-Power Wide-Area Networks (LPWANs) such as LoRa, the preamble is essential for detecting highly attenuated signals. Its repetitive pattern allows a receiver to identify the presence of the signal and its precise starting point. However, in ultra-low Signal-to-Noise Ratio (SNR) environments, the preamble becomes undetectable as it is buried in strong noise, causing the entire detection process to fail. Although existing methods, such as those based on preamble symbol energy accumulation or deep learning-based spectrogram restoration, have been proposed, their performance remains limited under these extreme conditions. To address this limitation, this paper proposes a novel two-stage preamble detection scheme. The first stage employs a Convolutional-Transformer Encoder-Deconvolutional network that leverages self-attention to capture the distinct linear patterns of chirp signals even in the presence of severe noise. In the second stage, a classifier determines the presence of the preamble. Experimental results demonstrate that our proposed method significantly outperforms conventional approaches, lowering the minimum required SNR for preamble detection. To validate its performance, we utilized metrics including True Positive Rate (TPR) and F-scores. Under these evaluations, our scheme achieves a detection accuracy of over 90% in the ultra-low SNR range of -21.7 dB to -24.3 dB, confirming its robustness and practical viability.
 
 
 ![모델 구조](./images/Figure_architecture.png)
-
-## 진행 상황
-* LoRa 심볼 데이터 생성 코드 구현
-* LoRa 프리앰블을 포함한 20개의 심볼을 생성하는 코드 구현
-* Symbol Restoration
-	* 심볼 학습 코드 구현
-	* 성능 평가를 위한 코드를 편의성을 위해 쥬피터 노트북으로 구현
-
-## 추가적으로 필요한 코드
-* Preamble Detector
-	* 학습 코드 구현
-	* 성능 평가 코드 구현
 
 ## Symbol Restoration
 설명
