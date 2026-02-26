@@ -3,7 +3,7 @@ Chirp-Aware Self-Attention for Robust LoRa Preamble Detection under Ultralow SNR
 
 <img src="https://img.shields.io/badge/-python3.10-3776AB?style=flat&logo=python&logoColor=white"/> <img src="https://img.shields.io/badge/-pytorch-EE4C2C?style=flat&logo=PyTorch&logoColor=white"/> <img src="https://img.shields.io/badge/-IQ Signal-8CAAE6?style=flat&logo=scipy&logoColor=white"/> <img src ="https://img.shields.io/badge/-Spectrogram-7B16FF?style=flat&logo=spectrum&logoColor=white"/>
 
-This repository contains the official implementation of the paper: **"Chirp-Aware Self-Attention for Robust LoRa Preamble Detection under Ultralow SNR"**, accepted in _IEEE Internet of Things Journal (2026)_.
+This repository contains the official implementation of the paper: **"[Chirp-Aware Self-Attention for Robust LoRa Preamble Detection under Ultralow SNR](https://ieeexplore.ieee.org/abstract/document/11386915)"**, accepted in _IEEE Internet of Things Journal (2026)_.
 
 ## 💡 Key Features
 - **Enhanced Preamble Detection**: Achieves high detection probability even in ultra-low SNR environments (e.g., under -20dB).
@@ -22,8 +22,6 @@ In Low-Power Wide-Area Networks (LPWANs) such as LoRa, the preamble is essential
 
 ![모델 구조](./images/Figure_architecture.png)
 
-%% ## Symbol Restoration
-설명 %%
 
 ### Example of Symbol Restoration
 ![프리앰블 탐지기](./images/Figure_symbol_restoration_example.png)
@@ -31,8 +29,8 @@ In Low-Power Wide-Area Networks (LPWANs) such as LoRa, the preamble is essential
 ## 🛠️ Environment & Prerequisites
 ### Tested System
 * ***OS**: Ubuntu 22.04 LTS
-* **GPU**: NVIDIA GeForce RTX 3090 (24GB) or higher 
-* **CUDA**: 12.1 (Compatible with PyTorch 2.1.0)
+* **GPU**: NVIDIA GeForce RTX 4090
+* **CUDA**: 12.1 
 * **Python**: 3.10 
 ### Key Dependencies 
 * **PyTorch**: 2.1.0 (docker image : pytorch/pytorch:2.1.0-cuda12.1-cudnn8-runtime)
@@ -96,16 +94,45 @@ python generate_preamble_embedded.py --generate_size 100
 ```
 
 ### 📡 Train
-Symbol Restoration 모델을 학습하기 위해 다음 명령어를 통해 학습을 진행
+We provide training scripts for both Symbol Restoration and Preamble Detection tasks. 
+#### 1. Symbol Restoration Model To train the proposed symbol restoration model, run the following command:
 
 ```bash
-python train.py --sf 7 --train_iters 1000000
+# Train with Spreading Factor 7 and 1M iterations
+python train.py --sf 7 --train_iters 100000
 ```
+- **Note:** For the original **NELoRa** training strategy, use the `train_origin.py` script. This serves as a baseline for comparison.
+```bash
+python train_origin.py --sf 7 --train_iters 100000
+```
+#### 2. Preamble Detection Model
 
-<h4>Prediction</h4>
-- `predict.ipynb` 참고
+The training process for Preamble Detection is documented in a Jupyter Notebook for interactive visualization and debugging.
 
-## 📂 폴더 구조 (Directory Structure)
+- Please refer to: **train_preamble_detection.ipynb**
+
+### 📊 Prediction & Analysis
+
+We provide Jupyter Notebooks for model inference and detailed performance analysis.
+### Interactive Demo
+
+- **predict.ipynb**:
+    
+    - Demonstrates how to load the trained model and perform inference on test data.
+        
+    - _Note: This notebook is currently under active development and serves as a usage example._
+        
+### Performance Analysis
+
+- **analyze_symbol_restoration.ipynb**:
+    
+    - Contains a detailed analysis of the Symbol Restoration model's performance.
+        
+    - Includes visualization of restoration accuracy across different SNR levels.
+	    
+    - Note: This notebook is currently under active development and serves as a usage example.
+
+%% ## 📂 Directory Structure
 ```
 . 
 ├── datasets/ # 데이터셋 폴더 
@@ -118,10 +145,10 @@ python train.py --sf 7 --train_iters 1000000
 ├── predict.ipynb # Symbol Restoration 예측 및 성능 평가
 └── README.md # 프로젝트 설명서
 ```
-
+ %%
 
 ## Notes
-```
+```cff
 @article{kim2026chirp,
   title={Chirp-Aware Self-Attention for Robust LoRa Preamble Detection under Ultra-Low SNR},
   author={Kim, Yun-Seob and Byeon, Seunggyu and Kim, Dong-Hyun and Hasegawa, Mikio and Kim, Jong-Deok},
