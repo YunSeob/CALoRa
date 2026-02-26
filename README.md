@@ -6,7 +6,7 @@ Chirp-Aware Self-Attention for Robust LoRa Preamble Detection under Ultralow SNR
 This repository contains the official implementation of the paper: **"Chirp-Aware Self-Attention for Robust LoRa Preamble Detection under Ultralow SNR"**, accepted in _IEEE Internet of Things Journal (2026)_.
 
 ## 💡 Key Features
-- - **Enhanced Preamble Detection**: Achieves high detection probability even in ultra-low SNR environments (e.g., under -20dB).
+- **Enhanced Preamble Detection**: Achieves high detection probability even in ultra-low SNR environments (e.g., under -20dB).
 	-  **Symbol Restoration**
     
 - **Chirp-Aware Mechanism:** Utilizes a novel self-attention module to effectively capture LoRa chirp characteristics.
@@ -22,18 +22,25 @@ In Low-Power Wide-Area Networks (LPWANs) such as LoRa, the preamble is essential
 
 ![모델 구조](./images/Figure_architecture.png)
 
-## Symbol Restoration
-설명
+%% ## Symbol Restoration
+설명 %%
 
-### 심볼 복원 예시
+### Example of Symbol Restoration
 ![프리앰블 탐지기](./images/Figure_symbol_restoration_example.png)
 
-## 개발 환경 (Prerequsites)
-* Python 3.10
-* Pytorch 2.1.0
+## 🛠️ Environment & Prerequisites
+### Tested System
+* ***OS**: Ubuntu 22.04 LTS
+* **GPU**: NVIDIA GeForce RTX 3090 (24GB) or higher 
+* **CUDA**: 12.1 (Compatible with PyTorch 2.1.0)
+* **Python**: 3.10 
+### Key Dependencies 
+* **PyTorch**: 2.1.0 (docker image : pytorch/pytorch:2.1.0-cuda12.1-cudnn8-runtime)
+* **NumPy**: 1.26.4; For numerical operations 
+* **SciPy**: 1.15.3; For signal processing & LoRa channel simulation 
+* **Matplotlib**: 3.10.3; For visualization of detection results
 
-## ⚙️ 설치 방법 (Installation)
-이 프로젝트를 실행하기 위해 먼저 저장소를 클론하고 필수 라이브러리를 설치해야 함
+## ⚙️ Installation
 
 ```bash
 git clone https://github.com/YunSeob/CALoRa.git
@@ -44,41 +51,45 @@ pip install -r requirements.txt
 ## 🚀사용 방법 (Usage)
 
 ### 📡Generating Datasets 
-**1. 신호 사양 (Signal Specs)** 
+**1. Signal Specification** 
+Key parameters used for LoRa signal generation:
 * **Bandwidth** : 125 kHz 
 * **Sampling Rate** : 1 MHz 
-* **Modulation:** LoRa Symbol IQ Signal 
+* **Modulation:** LoRa Symbol (IQ Data) 
   
-**2. 실행 옵션 (Usage)** 
-* **`--symbol`**: 신호의 노이즈 여부를 결정
-	* *Noisy* : SNR [-40, 0] dB 
-	* *Clean* : SNR 35 dB 
-* **`--generate_size`**: SNR 별 생성할 데이터 수를 정의 (Default: 32,768) 
+**2. Usage**
+You can configure the dataset generation using the following arguments:
+* **`--symbol`**: Specifies the signal type (Noise level).
+	* *Noisy* : SNR range from **-40 dB** to **0 dB** 
+	* *Clean* : Fixed SNR of **35 dB** 
+* **`--generate_size`**: Number of data samples to generate per SNR level (Default: 32,768).
 
-**3. 출력 (Output)** 
-데이터는 `./data_symbol/sfX/gen_symbol/` 폴더에 `.mat` 형식으로 저장 
-* **파일명 규칙:** `{sym_index}_{snr}_{sf}_{bw}_0_{val}_0_0.mat`
+
+**3. Output Structure** 
+Generated data is saved in '.mat' format within the `./data_symbol/sfX/gen_symbol/` directory.
+* **Filename Convention:** `{sym_index}_{snr}_{sf}_{bw}_0_{val}_0_0.mat`
 
 ```bash
-# Noisy 심볼 생성 (generate_size default : 32768)
+# Generate Noisy Symbol (generate_size default : 32768)
 python generate_symbols.py --symbol noisy --generate_size 1000
 
-# Clean 심볼 생성 (generate_size default : 32768)
+# Generate Clean Symbol (generate_size default : 32768)
 python generate_symbols.py --symbol clean --generate_size 1000
 ```
 
-* 프리앰블이 포함된 데이터 생성
-1. **프레임 구성**
-	- Preamble (8 Symbols) + Down-chirp (2 Symbols) + Payload (10 Symbols)
-	- Payload는 임의의 값으로 구성된 심볼
-	- SNR 범위 : [-40,0]
+### 📡Preamble-Embedded Data Generation
+1. **Frame Structure**
+The generated LoRa frames are structured as follows:
+	- **Sequence** : Preamble (8 Symbols) + Down-chirp (2 Symbols) + Payload (10 Symbols)
+	- **Payload** : Composed of random symbol values.
+	- **SNR Range** : -40 dB ~ - 0 dB
 
-2.  **실행 옵션 (Usage)**
-	- --generate_size : SNR 별 생성할 데이터 수를 정의 (Default: 100)
+2.  **Usage Arguments**
+	- **--generate_size** : Defines the number of data samples generated for each SNR level (Default: 100).
 
 3. **출력 (Output)**
-	- 데이터는 `./data_symbol/preamble_train/sfX/gen_symbol/` 폴더에 `.mat` 형식으로 저장
-	- **파일명 규칙** : `{sym_index}_{snr}_{sf}_{bw}_0_{payload list}_0_0.mat`
+	- The output files are stored in `.mat` format within the `./data_symbol/preamble_train/sfX/gen_symbol/` 
+	- **File Naming Rule** : `{sym_index}_{snr}_{sf}_{bw}_0_{payload list}_0_0.mat`
 
 ```bash
 python generate_preamble_embedded.py --generate_size 100
