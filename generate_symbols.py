@@ -12,7 +12,7 @@ bw = 125000
 # 사용되는 SF는 7,8,9
 # 심볼 저장 경로 예시 (SF=7) : 심볼은 ./data_symbol/sf7/gen_symbol/[filename]
 # filename : {sym_index}_{gen_snr}_{sf}_{bw}_0_{val}_0_0.mat
-def generate_symbol(generate_size=32768):
+def generate_symbol(generate_size=16384):
     # generate_size = generate_size
     snr_list = list(range(-40, 1))
 
@@ -27,7 +27,7 @@ def generate_symbol(generate_size=32768):
         print(f"[완료] SF={sf} 완료 ✅\n")
     
 # Clean Symbol의 SNR은 +35 dB로 설정
-def generate_clean_symbol(generate_size=32768):
+def generate_clean_symbol(generate_size=16384):
     snr_list = [35]
     for i in range(3):
         sf = i + 7
@@ -52,11 +52,11 @@ if __name__ == "__main__":
                         choices=['noisy', 'clean'], 
                         help="생성할 심볼의 종류. 'noisy' 또는 'clean' 중 선택")
 
-    # --generate_size 인자: 정수형(int)으로 받고, 기본값을 32768로 설정
+    # --generate_size 인자: 정수형(int)으로 받고, 기본값을 16384 설정
     parser.add_argument('--generate_size', 
                         type=int, 
-                        default=32768, 
-                        help="각 SNR/SF 당 생성할 심볼의 개수 (기본값: 32768)")
+                        default=16384, 
+                        help="각 SNR/SF 당 생성할 심볼의 개수 (기본값: 16384)")
 
     # 3. 인자 파싱
     args = parser.parse_args()

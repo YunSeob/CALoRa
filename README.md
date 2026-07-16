@@ -61,7 +61,7 @@ You can configure the dataset generation using the following arguments:
 * **`--symbol`**: Specifies the signal type (Noise level).
 	* *Noisy* : SNR range from **-40 dB** to **0 dB** 
 	* *Clean* : Fixed SNR of **35 dB** 
-* **`--generate_size`**: Number of data samples to generate per SNR level (Default: 32,768).
+* **`--generate_size`**: Number of data samples to generate per SNR level (32,768 for CALoRa Training (New default : 16,384)).
 
 
 **3. Output Structure** 
@@ -69,10 +69,10 @@ Generated data is saved in '.mat' format within the `./data_symbol/sfX/gen_symbo
 * **Filename Convention:** `{sym_index}_{snr}_{sf}_{bw}_0_{val}_0_0.mat`
 
 ```bash
-# Generate Noisy Symbol (generate_size default : 32768)
+# Generate Noisy Symbol (generate_size default : 16384)
 python generate_symbols.py --symbol noisy --generate_size 1000
 
-# Generate Clean Symbol (generate_size default : 32768)
+# Generate Clean Symbol (generate_size default : 16384)
 python generate_symbols.py --symbol clean --generate_size 1000
 ```
 
@@ -206,6 +206,14 @@ python generate_preamble_embedded_spectrogram.py \
     --root_path /datasets \
     --weights_dir ./weights \
     --cfo
+
+# 3. Convert to spectrograms using weights stored in a specific directory
+#    --weights_dir points to the FOLDER containing weight of chirp restorer
+#    based on the --sf argument.
+python generate_preamble_embedded_spectrogram.py \
+    --sf 7 \
+    --root_path /datasets \
+    --weights_dir <weight_path>
 ```
 
 ### 📡 Train
@@ -225,6 +233,59 @@ python train_origin.py --sf 7 --train_iters 100000
 The training process for Preamble Detection is documented in a Jupyter Notebook for interactive visualization and debugging.
 
 - Please refer to: **train_preamble_detection.ipynb**
+
+### 📊 Preamble Detection Evaluation
+
+After generating the spectrogram dataset (Steps 1 & 2 above), you can evaluate the trained preamble detector using `test_preamble_detector.py`.
+
+> **Note:** The paths to the model checkpoint (`--model_path`) and spectrogram data (`--data_dirs`) will differ depending on your environment. Adjust them to match your actual directory structure.
+
+**Arguments**
+
+| Argument | Description |
+|---|---|
+| `--sf` | Spreading Factor of the model to evaluate |
+| `--model_path` | Path to the trained checkpoint (`.pth`) |
+| `--data_dirs` | Directory containing test spectrogram `.mat` files |
+| `--shift_size` | Time-axis offset applied to test spectrograms (default: `66`) |
+| `--thresh` | Probability threshold for preamble detection |
+| `--location_tol` | Column tolerance for correct location (default: `37` ≈ 1 LoRa symbol) |
+| `--C` | Base channel count used during training (default: `128`) |
+| `--no_se_tcn` | Use original TCN without SEBlock (required for SF7 weights trained before SE was introduced) |
+
+**SF7 Example**
+
+SF7 weights were trained with the original TCN architecture (no SEBlock, 5 dilations). You must pass `--C 64 --no_se_tcn` to match the checkpoint.
+
+```bash
+python test_preamble_detector.py \
+    --sf 7 \
+    --model_path <path/to/ckpt_sf7/best_finetuned.pth> \
+    --data_dirs <path/to/sf7/preamble_train/spectrogram> \
+    --shift_size 66 \
+    --thresh 0.5 \
+    --location_tol 37 \
+    --C 64 \
+    --no_se_tcn
+```
+
+**SF8 Example**
+
+SF8 weights use the updated architecture (SEBlock + 7 dilations, C=128), which are the default settings — no extra flags needed.
+
+```bash
+python test_preamble_detector.py \
+    --sf 8 \
+    --model_path <path/to/ckpt_sf8/best_finetuned.pth> \
+    --data_dirs <path/to/sf8/preamble_train/spectrogram> \
+    --shift_size 66 \
+    --thresh 0.6 \
+    --location_tol 37
+```
+
+The script outputs a per-SNR detection rate table and overall metrics (TPR, Precision, F-score, etc.) to stdout. To save results as CSV files, add `--output_csv <output_path>`.
+
+---
 
 ### 📊 Prediction & Analysis
 
