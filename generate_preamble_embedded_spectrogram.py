@@ -230,9 +230,9 @@ def parse_args():
     p.add_argument("--weights_dir", type=str,
                    default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "weights"),
                    help="chirp_restorer_sfX.pth 가중치 폴더 (기본값: ./weights)")
-    p.add_argument("--calora_dir", type=str, default="/phd/ys/calora",
-                   help="CNNTransformerHybrid_variable_sf5 모델이 있는 calora 루트 경로 "
-                        "(기본값: /phd/ys/calora)")
+    p.add_argument("--calora_dir", type=str,
+                   default=os.path.dirname(os.path.abspath(__file__)),
+                   help="models/model_components.py 가 있는 디렉토리 (기본값: 이 스크립트와 같은 폴더)")
 
     cfo_group = p.add_mutually_exclusive_group()
     cfo_group.add_argument("--cfo", action="store_true",

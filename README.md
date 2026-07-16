@@ -5,6 +5,8 @@ Chirp-Aware Self-Attention for Robust LoRa Preamble Detection under Ultralow SNR
 
 This repository contains the official implementation of the paper: **"[Chirp-Aware Self-Attention for Robust LoRa Preamble Detection under Ultralow SNR](https://ieeexplore.ieee.org/abstract/document/11386915)"**, accepted in _IEEE Internet of Things Journal (2026)_.
 
+**Authors:** Yun-Seob Kim, Seunggyu Byeon, Dong-Hyun Kim, Mikio Hasegawa, Jong-Deok Kim
+
 ## Overview
 
 **Problem:** In LoRa networks, preamble detection fails in ultra-low SNR environments (below −20 dB) because the signal is buried in noise.
@@ -132,7 +134,7 @@ This step runs each raw IQ packet through the **pre-trained chirp restorer** (sy
 | `--sf` | `7,8,9` | SF(s) to process, comma-separated |
 | `--root_path` | `/datasets` | Base output directory (same as Step 1 — not the `datasets/` folder inside this repo) |
 | `--weights_dir` | `./weights` | Folder containing `chirp_restorer_sfX.pth` |
-| `--calora_dir` | `/phd/ys/calora` | Path to the directory where the model class is defined |
+| `--calora_dir` | `.` | Directory containing `models/model_components.py` (defaults to this repo's root) |
 | `--cfo` | off | Apply random CFO/SFO impairment per file (±`max_ppm`) |
 | `--fixed_ppm` | — | Apply a fixed ppm CFO/SFO to all files |
 | `--max_ppm` | `20.0` | Max ppm range when `--cfo` is used |
