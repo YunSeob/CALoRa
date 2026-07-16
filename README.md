@@ -98,7 +98,7 @@ Each generated frame consists of 20 LoRa symbols:
 |---|---|---|
 | `--sf` | `7,8,9,10` | Spreading Factor(s), comma-separated |
 | `--generate_size` | `100` | Number of samples per SNR level per SF |
-| `--root_path` | `/datasets` | Base directory for output |
+| `--root_path` | `/datasets` | Base output directory (e.g. a Docker volume mount — not the `datasets/` folder inside this repo) |
 
 ```bash
 # Generate SF7 and SF8 data, 200 samples per SNR level
@@ -130,7 +130,7 @@ This step runs each raw IQ packet through the **pre-trained chirp restorer** (sy
 | Argument | Default | Description |
 |---|---|---|
 | `--sf` | `7,8,9` | SF(s) to process, comma-separated |
-| `--root_path` | `/datasets` | Base directory (same as Step 1) |
+| `--root_path` | `/datasets` | Base output directory (same as Step 1 — not the `datasets/` folder inside this repo) |
 | `--weights_dir` | `./weights` | Folder containing `chirp_restorer_sfX.pth` |
 | `--calora_dir` | `/phd/ys/calora` | Path to the directory where the model class is defined |
 | `--cfo` | off | Apply random CFO/SFO impairment per file (±`max_ppm`) |
