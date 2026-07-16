@@ -88,8 +88,10 @@ Each generated frame consists of 20 LoRa symbols:
 |---|---|---|
 | 0 – 7 | 8 | Preamble (value = 0) |
 | 8 – 9 | 2 | Sync word (random, range 16–96) |
-| 10 – 11 | 2 | Down-chirp |
+| 10 – 11 | 2 | Down-chirp (\*) |
 | 12 – 19 | 8 | Payload (random) |
+
+> **(\*) Note on down-chirp count:** The actual LoRa PHY (as implemented in GNU Radio) uses **2.25 down-chirps** (2 full down-chirps + 0.25 up-chirp for timing recovery). This implementation uses **2 down-chirps** for simplicity. The 0.25-symbol difference affects only the tail of the sync region and has negligible impact on preamble detection performance, since the detector focuses on the energy pattern of the 8 leading preamble symbols.
 
 - **SNR range**: −40 dB to 0 dB (41 levels)
 - **Output format**: `.mat` file, `chirp` field of shape `(1, 2^sf × 8 × 20)`

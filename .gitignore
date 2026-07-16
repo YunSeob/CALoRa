@@ -11,5 +11,5 @@
 *.csv
 정리노트.md
 *.canvas
-.ipynb
+*.ipynb
 .train_origin.py
