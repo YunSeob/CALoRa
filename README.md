@@ -5,91 +5,80 @@ Chirp-Aware Self-Attention for Robust LoRa Preamble Detection under Ultralow SNR
 
 This repository contains the official implementation of the paper: **"[Chirp-Aware Self-Attention for Robust LoRa Preamble Detection under Ultralow SNR](https://ieeexplore.ieee.org/abstract/document/11386915)"**, accepted in _IEEE Internet of Things Journal (2026)_.
 
-## 💡 Key Features
-- **Enhanced Preamble Detection**: Achieves high detection probability even in ultra-low SNR environments (e.g., under -20dB).
-	-  **Symbol Restoration**
-    
-- **Chirp-Aware Mechanism:** Utilizes a novel self-attention module to effectively capture LoRa chirp characteristics.
-	- **Convolutional Neural Network (CNN)**
-	- **Transformer Encoder (Self-attention)**
-    
-- **End-to-End Pipeline:** Includes full support for signal generation, channel simulation, and model training.
-	- **Restore-then-Detect**
+## Overview
 
-<h2>Abstract</h2>
-In Low-Power Wide-Area Networks (LPWANs) such as LoRa, the preamble is essential for detecting highly attenuated signals. Its repetitive pattern allows a receiver to identify the presence of the signal and its precise starting point. However, in ultra-low Signal-to-Noise Ratio (SNR) environments, the preamble becomes undetectable as it is buried in strong noise, causing the entire detection process to fail. Although existing methods, such as those based on preamble symbol energy accumulation or deep learning-based spectrogram restoration, have been proposed, their performance remains limited under these extreme conditions. To address this limitation, this paper proposes a novel two-stage preamble detection scheme. The first stage employs a Convolutional-Transformer Encoder-Deconvolutional network that leverages self-attention to capture the distinct linear patterns of chirp signals even in the presence of severe noise. In the second stage, a classifier determines the presence of the preamble. Experimental results demonstrate that our proposed method significantly outperforms conventional approaches, lowering the minimum required SNR for preamble detection. To validate its performance, we utilized metrics including True Positive Rate (TPR) and F-scores. Under these evaluations, our scheme achieves a detection accuracy of over 90% in the ultra-low SNR range of -21.7 dB to -24.3 dB, confirming its robustness and practical viability.
+**Problem:** In LoRa networks, preamble detection fails in ultra-low SNR environments (below −20 dB) because the signal is buried in noise.
 
+**Solution:** CALoRa introduces a two-stage pipeline:
+1. **Chirp Restorer** — A CNN-Transformer network reconstructs the chirp structure from a noisy spectrogram using self-attention.
+2. **Preamble Detector** — A temporal classifier localizes the preamble position in the restored spectrogram.
 
+**Result:** Achieves **>90% detection accuracy** at SNRs between **−21.7 dB and −24.3 dB**, significantly outperforming conventional methods.
 
-![모델 구조](./images/Figure_architecture.png)
+![Model Architecture](./images/Figure_architecture.png)
 
+**Example of Symbol Restoration**
 
-### Example of Symbol Restoration
-![프리앰블 탐지기](./images/Figure_symbol_restoration_example.png)
+![Symbol Restoration](./images/Figure_symbol_restoration_example.png)
 
 ## 🛠️ Environment & Prerequisites
+
 ### Tested System
-* ***OS**: Ubuntu 22.04 LTS
+* **OS**: Ubuntu 22.04 LTS
 * **GPU**: NVIDIA GeForce RTX 4090
-* **CUDA**: 12.1 
-* **Python**: 3.10 
-### Key Dependencies 
-* **PyTorch**: 2.1.0 (docker image : pytorch/pytorch:2.1.0-cuda12.1-cudnn8-runtime)
-* **NumPy**: 1.26.4; For numerical operations 
-* **SciPy**: 1.15.3; For signal processing & LoRa channel simulation 
-* **Matplotlib**: 3.10.3; For visualization of detection results
+* **CUDA**: 12.1
+* **Python**: 3.10
+
+### Key Dependencies
+* **PyTorch**: 2.1.0 (docker image: `pytorch/pytorch:2.1.0-cuda12.1-cudnn8-runtime`)
+* **NumPy**: 1.26.4 — numerical operations
+* **SciPy**: 1.15.3 — signal processing & LoRa channel simulation
+* **Matplotlib**: 3.10.3 — visualization
 
 ## ⚙️ Installation
 
 ```bash
 git clone https://github.com/YunSeob/CALoRa.git
-cd CALoRa 
+cd CALoRa
 pip install -r requirements.txt
 ```
 
-## 🚀Usage
+## 🚀 Usage
 
-### 📡Generating Datasets 
-**1. Signal Specification** 
+### 📡 Generating Datasets (Symbol Restoration Training)
+
 Key parameters used for LoRa signal generation:
-* **Bandwidth** : 125 kHz 
-* **Sampling Rate** : 1 MHz 
-* **Modulation:** LoRa Symbol (IQ Data) 
-  
-**2. Usage**
-You can configure the dataset generation using the following arguments:
-* **`--symbol`**: Specifies the signal type (Noise level).
-	* *Noisy* : SNR range from **-40 dB** to **0 dB** 
-	* *Clean* : Fixed SNR of **35 dB** 
-* **`--generate_size`**: Number of data samples to generate per SNR level (32,768 for CALoRa Training (New default : 16,384)).
+* **Bandwidth**: 125 kHz
+* **Sampling Rate**: 1 MHz
+* **Modulation**: LoRa Symbol (IQ Data)
 
+**Arguments**
+* **`--symbol`**: Signal type — `noisy` (SNR −40 to 0 dB) or `clean` (fixed 35 dB)
+* **`--generate_size`**: Number of samples per SNR level (default: 16,384)
 
-**3. Output Structure** 
-Generated data is saved in '.mat' format within the `./data_symbol/sfX/gen_symbol/` directory.
-* **Filename Convention:** `{sym_index}_{snr}_{sf}_{bw}_0_{val}_0_0.mat`
+**Output**: `.mat` files in `./data_symbol/sfX/gen_symbol/`  
+**Filename convention**: `{sym_index}_{snr}_{sf}_{bw}_0_{val}_0_0.mat`
 
 ```bash
-# Generate Noisy Symbol (generate_size default : 16384)
+# Generate noisy symbols
 python generate_symbols.py --symbol noisy --generate_size 1000
 
-# Generate Clean Symbol (generate_size default : 16384)
+# Generate clean symbols
 python generate_symbols.py --symbol clean --generate_size 1000
 ```
+
+---
 
 ### 📡 Preamble Detection Data Pipeline
 
 Generating training/test data for the preamble detector requires **two steps**:
 
 ```
-Step 1: generate_preamble_embedded.py     →  raw IQ packets  (.mat)
-Step 2: generate_preamble_embedded_spectrogram.py  →  restored spectrograms (.mat)
+Step 1: generate_preamble_embedded.py            →  raw IQ packets        (.mat)
+Step 2: generate_preamble_embedded_spectrogram.py →  restored spectrograms (.mat)
 ```
 
----
-
 #### Step 1 — Generate Preamble-Embedded IQ Signals
-
-**Frame Structure**
 
 Each generated frame consists of 20 LoRa symbols:
 
@@ -105,11 +94,9 @@ Each generated frame consists of 20 LoRa symbols:
 - **Output path**: `{root_path}/sf{sf}/preamble_train/gen_symbol/`
 - **Filename convention**: `{index}_{snr}_{sf}_{bw}_0_{payload_list}_0_0.mat`
 
-**Arguments**
-
 | Argument | Default | Description |
 |---|---|---|
-| `--sf` | `7,8,9,10` | Spreading Factor(s) to generate, comma-separated |
+| `--sf` | `7,8,9,10` | Spreading Factor(s), comma-separated |
 | `--generate_size` | `100` | Number of samples per SNR level per SF |
 | `--root_path` | `/datasets` | Base directory for output |
 
@@ -120,7 +107,7 @@ python generate_preamble_embedded.py \
     --generate_size 200 \
     --root_path /datasets
 
-# Generate all SFs (7, 8, 9, 10) with default settings
+# Generate all SFs (7, 8, 9, 10)
 python generate_preamble_embedded.py --root_path /datasets
 ```
 
@@ -132,8 +119,6 @@ python generate_preamble_embedded.py --root_path /datasets
 >     ...
 > ```
 
----
-
 #### Step 2 — Convert IQ Signals to Restored Spectrograms
 
 This step runs each raw IQ packet through the **pre-trained chirp restorer** (symbol-by-symbol STFT → `CNNTransformerHybrid` → magnitude) and saves the result as a `(n_classes, 660)` spectrogram.
@@ -142,14 +127,12 @@ This step runs each raw IQ packet through the **pre-trained chirp restorer** (sy
 - **Output**: `{root_path}/sf{sf}/preamble_train/spectrogram/*.mat`, `chirp` field of shape `(n_classes, 660)`
 - **Requires**: pre-trained chirp restorer weights (`weights/chirp_restorer_sfX.pth`)
 
-**Arguments**
-
 | Argument | Default | Description |
 |---|---|---|
 | `--sf` | `7,8,9` | SF(s) to process, comma-separated |
 | `--root_path` | `/datasets` | Base directory (same as Step 1) |
 | `--weights_dir` | `./weights` | Folder containing `chirp_restorer_sfX.pth` |
-| `--calora_dir` | `/phd/ys/calora` | Path to CALoRa source (for model import) |
+| `--calora_dir` | `/phd/ys/calora` | Path to the directory where the model class is defined |
 | `--cfo` | off | Apply random CFO/SFO impairment per file (±`max_ppm`) |
 | `--fixed_ppm` | — | Apply a fixed ppm CFO/SFO to all files |
 | `--max_ppm` | `20.0` | Max ppm range when `--cfo` is used |
@@ -159,19 +142,20 @@ This step runs each raw IQ packet through the **pre-trained chirp restorer** (sy
 python generate_preamble_embedded_spectrogram.py \
     --sf 7,8,9 \
     --root_path /datasets \
-    --weights_dir ./weights \
-    --calora_dir /phd/ys/calora
+    --weights_dir <weight_path>
 
 # With random CFO (±20 ppm) — simulates carrier frequency offset
 python generate_preamble_embedded_spectrogram.py \
     --sf 7 \
     --root_path /datasets \
+    --weights_dir <weight_path> \
     --cfo --max_ppm 20
 
-# With fixed CFO (15 ppm)
+# With fixed CFO
 python generate_preamble_embedded_spectrogram.py \
     --sf 7 \
     --root_path /datasets \
+    --weights_dir <weight_path> \
     --fixed_ppm 15.0
 ```
 
@@ -183,64 +167,71 @@ python generate_preamble_embedded_spectrogram.py \
 >     ...
 > ```
 
----
-
 #### Complete Data Generation Example
 
 ```bash
-# 1. Generate raw IQ packets (SF7, 200 samples/SNR)
+# Step 1 — Generate raw IQ packets (SF7, 200 samples/SNR)
 python generate_preamble_embedded.py \
     --sf 7 \
     --generate_size 200 \
     --root_path /datasets
 
-# 2. Convert to spectrograms (no CFO)
-python generate_preamble_embedded_spectrogram.py \
-    --sf 7 \
-    --root_path /datasets \
-    --weights_dir ./weights
-
-# 2-b. Convert to spectrograms (with random CFO — for augmented test set)
-python generate_preamble_embedded_spectrogram.py \
-    --sf 7 \
-    --root_path /datasets \
-    --weights_dir ./weights \
-    --cfo
-
-# 3. Convert to spectrograms using weights stored in a specific directory
-#    --weights_dir points to the FOLDER containing weight of chirp restorer
-#    based on the --sf argument.
+# Step 2 — Convert to spectrograms (no CFO)
 python generate_preamble_embedded_spectrogram.py \
     --sf 7 \
     --root_path /datasets \
     --weights_dir <weight_path>
+
+# Step 2-b — Convert to spectrograms with random CFO (augmented test set)
+python generate_preamble_embedded_spectrogram.py \
+    --sf 7 \
+    --root_path /datasets \
+    --weights_dir <weight_path> \
+    --cfo
 ```
+
+---
 
 ### 📡 Train
-We provide training scripts for both Symbol Restoration and Preamble Detection tasks. 
-#### 1. Symbol Restoration Model To train the proposed symbol restoration model, run the following command:
+
+#### 1. Symbol Restoration Model
+
+To train the proposed symbol restoration model, run:
 
 ```bash
-# Train with Spreading Factor 7 and 1M iterations
+# Train with Spreading Factor 7
 python train.py --sf 7 --train_iters 100000
 ```
-- **Note:** For the original **NELoRa** training strategy, use the `train_origin.py` script. This serves as a baseline for comparison.
-```bash
-python train_origin.py --sf 7 --train_iters 100000
-```
+
 #### 2. Preamble Detection Model
 
-The training process for Preamble Detection is documented in a Jupyter Notebook for interactive visualization and debugging.
+Use `train_preamble_detector.py` to train the preamble detection model. The spectrogram dataset from the pipeline above is required as input.
 
-- Please refer to: **train_preamble_detection.ipynb**
+```bash
+# SF7 (original architecture: C=64, no SEBlock)
+python train_preamble_detector.py \
+    --sf 7 \
+    --data_dirs <path/to/sf7/preamble_train/spectrogram> \
+    --C 64 \
+    --no_se_tcn \
+    --epochs 100 \
+    --save_dir ckpt_sf7
+
+# SF8 / SF9 (updated architecture: C=128, SEBlock enabled)
+python train_preamble_detector.py \
+    --sf 8 \
+    --data_dirs <path/to/sf8/preamble_train/spectrogram> \
+    --epochs 100 \
+    --save_dir ckpt_sf8
+```
+
+---
 
 ### 📊 Preamble Detection Evaluation
 
-After generating the spectrogram dataset (Steps 1 & 2 above), you can evaluate the trained preamble detector using `test_preamble_detector.py`.
+After training, evaluate the preamble detector using `test_preamble_detector.py`.
 
-> **Note:** The paths to the model checkpoint (`--model_path`) and spectrogram data (`--data_dirs`) will differ depending on your environment. Adjust them to match your actual directory structure.
-
-**Arguments**
+> **Note:** Paths to the model checkpoint and data directory will differ per environment. Adjust them accordingly.
 
 | Argument | Description |
 |---|---|
@@ -251,11 +242,9 @@ After generating the spectrogram dataset (Steps 1 & 2 above), you can evaluate t
 | `--thresh` | Probability threshold for preamble detection |
 | `--location_tol` | Column tolerance for correct location (default: `37` ≈ 1 LoRa symbol) |
 | `--C` | Base channel count used during training (default: `128`) |
-| `--no_se_tcn` | Use original TCN without SEBlock (required for SF7 weights trained before SE was introduced) |
+| `--no_se_tcn` | Use original TCN without SEBlock (required for SF7 weights) |
 
-**SF7 Example**
-
-SF7 weights were trained with the original TCN architecture (no SEBlock, 5 dilations). You must pass `--C 64 --no_se_tcn` to match the checkpoint.
+**SF7 Example** — trained with original TCN (no SEBlock, C=64):
 
 ```bash
 python test_preamble_detector.py \
@@ -269,9 +258,7 @@ python test_preamble_detector.py \
     --no_se_tcn
 ```
 
-**SF8 Example**
-
-SF8 weights use the updated architecture (SEBlock + 7 dilations, C=128), which are the default settings — no extra flags needed.
+**SF8 Example** — trained with updated architecture (SEBlock, C=128), default settings apply:
 
 ```bash
 python test_preamble_detector.py \
@@ -283,31 +270,26 @@ python test_preamble_detector.py \
     --location_tol 37
 ```
 
-The script outputs a per-SNR detection rate table and overall metrics (TPR, Precision, F-score, etc.) to stdout. To save results as CSV files, add `--output_csv <output_path>`.
+The script outputs a per-SNR detection rate table and the following overall metrics:
+
+| Metric | Description |
+|---|---|
+| **TPR (Recall)** | Fraction of correctly detected preambles |
+| **Precision** | Fraction of detections that are correct |
+| **F0.5 / F1 / F2** | F-score variants weighting precision vs. recall |
+| **Accuracy** | Overall correct classifications |
+| **AvgProb** | Mean model confidence per SNR bin |
+| **DetRate** | Fraction of samples with correct detection AND location |
+
+To save results as CSV, add `--output_csv <output_path>`.
 
 ---
 
 ### 📊 Prediction & Analysis
 
-We provide Jupyter Notebooks for model inference and detailed performance analysis.
-### Interactive Demo
+#### Symbol Restoration
 
-- **predict.ipynb**:
-    
-    - Demonstrates how to load the trained model and perform inference on test data.
-        
-    - _Note: This notebook is currently under active development and serves as a usage example._
-        
-### Performance Analysis
-
-- **analyze_symbol_restoration.ipynb**:
-    
-    - Contains a detailed analysis of the Symbol Restoration model's performance.
-        
-    - Includes visualization of restoration accuracy across different SNR levels.
-	    
-    - Note: This notebook is currently under active development and serves as a usage example.
-
+Use `predict.py` for symbol restoration inference. The model takes a noisy LoRa spectrogram as input and outputs a restored version that suppresses noise while preserving the chirp structure.
 
 ## Acknowledgement
 This code is built upon the official implementation of **NELoRa**. We appreciate their contributions to the open-source community.

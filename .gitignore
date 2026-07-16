@@ -8,7 +8,8 @@
 .DS_Store
 *.mat
 
-*.pth
 *.csv
 정리노트.md
 *.canvas
+.ipynb
+.train_origin.py

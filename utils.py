@@ -26,7 +26,7 @@ def spec_to_network_input(x, opts):
     freq_size = opts.freq_size
     # trim
     trim_size = freq_size // 2
-    # up down 拼接
+    # up down 
     y = torch.cat((x[:, -trim_size:, :], x[:, 0:trim_size, :]), 1)
 
     if opts.normalization:
