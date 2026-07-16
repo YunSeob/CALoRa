@@ -19,10 +19,12 @@ def create_lora_packet(sf: int) -> list:
 
     return packet
 
-def generate_packet_with_noise(sf, bw, generate_size, target_snr=-5):
+def generate_packet_with_noise(sf, bw, generate_size, target_snr=-5, root_path=None):
     lora_init = LoRa(sf,bw)
     sym_index = 0
-    root_path = f'./data_symbol/preamble_train/sf{str(sf)}/gen_symbol/'
+    if root_path is None:
+        root_path = '/datasets'
+    root_path = os.path.join(root_path, f'sf{sf}', 'preamble_train', 'gen_symbol', '')
     os.makedirs(root_path, exist_ok=True)
     for i in range(generate_size):
         packet_chirp = np.zeros((int(2**sf)*8*20), dtype=np.complex128)
@@ -53,29 +55,43 @@ if __name__ == "__main__":
 
     # 2. 인자 추가하기
 
-    # --generate_size 인자: 정수형(int)으로 받고, 기본값을 100로 설정
-    parser.add_argument('--generate_size', 
-                        type=int, 
-                        default=100, 
+    parser.add_argument('--generate_size',
+                        type=int,
+                        default=100,
                         help="각 SNR/SF 당 생성할 심볼의 개수 (기본값: 100)")
+    parser.add_argument('--root_path',
+                        type=str,
+                        default='/datasets',
+                        help="저장 베이스 경로 (기본값: /datasets). "
+                             "실제 저장 경로: {root_path}/sf{sf}/preamble_train/gen_symbol/")
+    parser.add_argument('--sf',
+                        type=str,
+                        default='7,8,9,10',
+                        help="생성할 SF 목록, 쉼표로 구분 (기본값: '7,8,9,10'). "
+                             "예: --sf 7  또는  --sf 7,8")
 
     # 3. 인자 파싱
     args = parser.parse_args()
 
+    sf_list = [int(x.strip()) for x in args.sf.split(',')]
+    for sf in sf_list:
+        if sf not in (7, 8, 9, 10):
+            parser.error(f"지원하지 않는 SF 값: {sf}. 7, 8, 9, 10 중에서 선택하세요.")
+
     # 4. 파싱된 인자에 따라 적절한 함수 실행
     print(f"--- Preamble-embedded 신호 생성 시작 ---")
+    print(f"  생성할 SF: {sf_list}")
     print(f"  생성할 개수: {args.generate_size}")
+    print(f"  저장 베이스 경로: {args.root_path}")
     print(f"----------------------\n")
 
     snr_list = list(range(-40,1))
     bw = 125000
-    for i in range(3):
-        sf = i + 7
-        lora_init = LoRa(i+7,bw)
-        for j in range(len(snr_list)):
-            snr = snr_list[j]
+    for sf in sf_list:
+        lora_init = LoRa(sf, bw)
+        for snr in snr_list:
             print(f"[진행상황] SF={sf}, SNR={snr} dB에서 패킷 {args.generate_size}개 생성 중...")
-            generate_packet_with_noise(sf, bw, generate_size=args.generate_size, target_snr=snr)
+            generate_packet_with_noise(sf, bw, generate_size=args.generate_size, target_snr=snr, root_path=args.root_path)
         print(f'[완료] SF={sf} 완료 ✅\n')
 
     print("--- 모든 작업 완료 ---")

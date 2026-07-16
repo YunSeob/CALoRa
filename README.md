@@ -76,22 +76,136 @@ python generate_symbols.py --symbol noisy --generate_size 1000
 python generate_symbols.py --symbol clean --generate_size 1000
 ```
 
-### 📡Preamble-Embedded Data Generation
-1. **Frame Structure**
-The generated LoRa frames are structured as follows:
-	- **Sequence** : Preamble (8 Symbols) + Down-chirp (2 Symbols) + Payload (10 Symbols)
-	- **Payload** : Composed of random symbol values.
-	- **SNR Range** : -40 dB ~ - 0 dB
+### 📡 Preamble Detection Data Pipeline
 
-2.  **Usage Arguments**
-	- **--generate_size** : Defines the number of data samples generated for each SNR level (Default: 100).
+Generating training/test data for the preamble detector requires **two steps**:
 
-3. **Output**
-	- The output files are stored in `.mat` format within the `./data_symbol/preamble_train/sfX/gen_symbol/` 
-	- **File Naming Rule** : `{sym_index}_{snr}_{sf}_{bw}_0_{payload list}_0_0.mat`
+```
+Step 1: generate_preamble_embedded.py     →  raw IQ packets  (.mat)
+Step 2: generate_preamble_embedded_spectrogram.py  →  restored spectrograms (.mat)
+```
+
+---
+
+#### Step 1 — Generate Preamble-Embedded IQ Signals
+
+**Frame Structure**
+
+Each generated frame consists of 20 LoRa symbols:
+
+| Position | Symbols | Description |
+|---|---|---|
+| 0 – 7 | 8 | Preamble (value = 0) |
+| 8 – 9 | 2 | Sync word (random, range 16–96) |
+| 10 – 11 | 2 | Down-chirp |
+| 12 – 19 | 8 | Payload (random) |
+
+- **SNR range**: −40 dB to 0 dB (41 levels)
+- **Output format**: `.mat` file, `chirp` field of shape `(1, 2^sf × 8 × 20)`
+- **Output path**: `{root_path}/sf{sf}/preamble_train/gen_symbol/`
+- **Filename convention**: `{index}_{snr}_{sf}_{bw}_0_{payload_list}_0_0.mat`
+
+**Arguments**
+
+| Argument | Default | Description |
+|---|---|---|
+| `--sf` | `7,8,9,10` | Spreading Factor(s) to generate, comma-separated |
+| `--generate_size` | `100` | Number of samples per SNR level per SF |
+| `--root_path` | `/datasets` | Base directory for output |
 
 ```bash
-python generate_preamble_embedded.py --generate_size 100
+# Generate SF7 and SF8 data, 200 samples per SNR level
+python generate_preamble_embedded.py \
+    --sf 7,8 \
+    --generate_size 200 \
+    --root_path /datasets
+
+# Generate all SFs (7, 8, 9, 10) with default settings
+python generate_preamble_embedded.py --root_path /datasets
+```
+
+> **Output example** (SF7, 200 samples × 41 SNR levels = 8,200 files):
+> ```
+> /datasets/sf7/preamble_train/gen_symbol/
+>     0_0_7_125000_0_[0,0,...,42]_0_0.mat
+>     1_-1_7_125000_0_[0,0,...,87]_0_0.mat
+>     ...
+> ```
+
+---
+
+#### Step 2 — Convert IQ Signals to Restored Spectrograms
+
+This step runs each raw IQ packet through the **pre-trained chirp restorer** (symbol-by-symbol STFT → `CNNTransformerHybrid` → magnitude) and saves the result as a `(n_classes, 660)` spectrogram.
+
+- **Input**: `{root_path}/sf{sf}/preamble_train/gen_symbol/*.mat`
+- **Output**: `{root_path}/sf{sf}/preamble_train/spectrogram/*.mat`, `chirp` field of shape `(n_classes, 660)`
+- **Requires**: pre-trained chirp restorer weights (`weights/chirp_restorer_sfX.pth`)
+
+**Arguments**
+
+| Argument | Default | Description |
+|---|---|---|
+| `--sf` | `7,8,9` | SF(s) to process, comma-separated |
+| `--root_path` | `/datasets` | Base directory (same as Step 1) |
+| `--weights_dir` | `./weights` | Folder containing `chirp_restorer_sfX.pth` |
+| `--calora_dir` | `/phd/ys/calora` | Path to CALoRa source (for model import) |
+| `--cfo` | off | Apply random CFO/SFO impairment per file (±`max_ppm`) |
+| `--fixed_ppm` | — | Apply a fixed ppm CFO/SFO to all files |
+| `--max_ppm` | `20.0` | Max ppm range when `--cfo` is used |
+
+```bash
+# Basic (no CFO)
+python generate_preamble_embedded_spectrogram.py \
+    --sf 7,8,9 \
+    --root_path /datasets \
+    --weights_dir ./weights \
+    --calora_dir /phd/ys/calora
+
+# With random CFO (±20 ppm) — simulates carrier frequency offset
+python generate_preamble_embedded_spectrogram.py \
+    --sf 7 \
+    --root_path /datasets \
+    --cfo --max_ppm 20
+
+# With fixed CFO (15 ppm)
+python generate_preamble_embedded_spectrogram.py \
+    --sf 7 \
+    --root_path /datasets \
+    --fixed_ppm 15.0
+```
+
+> **Output example** (SF7):
+> ```
+> /datasets/sf7/preamble_train/spectrogram/
+>     0_0_7_125000_0_[0,0,...,42]_0_0.mat     # chirp: (128, 660)
+>     1_-1_7_125000_0_[0,0,...,87]_0_0.mat
+>     ...
+> ```
+
+---
+
+#### Complete Data Generation Example
+
+```bash
+# 1. Generate raw IQ packets (SF7, 200 samples/SNR)
+python generate_preamble_embedded.py \
+    --sf 7 \
+    --generate_size 200 \
+    --root_path /datasets
+
+# 2. Convert to spectrograms (no CFO)
+python generate_preamble_embedded_spectrogram.py \
+    --sf 7 \
+    --root_path /datasets \
+    --weights_dir ./weights
+
+# 2-b. Convert to spectrograms (with random CFO — for augmented test set)
+python generate_preamble_embedded_spectrogram.py \
+    --sf 7 \
+    --root_path /datasets \
+    --weights_dir ./weights \
+    --cfo
 ```
 
 ### 📡 Train
