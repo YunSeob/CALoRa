@@ -4,7 +4,7 @@ generate_preamble_embedded_spectrogram.py
 Pipeline:
     /datasets/sfX/preamble_train/gen_symbol/*.mat  (raw IQ, shape (1, 2^sf*8*20))
         -> per-symbol STFT (20 symbols × 33 time-bins = 660 columns)
-        -> chirp restorer  (CNNTransformerHybrid_variable_sf5)
+        -> chirp restorer  (CALoRa)
         -> magnitude spectrogram  (n_classes, 660)
     /datasets/sfX/preamble_train/spectrogram/*.mat
 
@@ -112,9 +112,9 @@ def load_model(sf: int, weights_dir: str, calora_dir: str,
 
     if calora_dir not in sys.path:
         sys.path.insert(0, calora_dir)
-    from models.model_components import CNNTransformerHybrid_variable_sf5
+    from models.model_components import CALoRa
 
-    model = CNNTransformerHybrid_variable_sf5().to(device)
+    model = CALoRa().to(device)
     state = torch.load(weight_path, map_location=device)
     if isinstance(state, dict) and "model" in state:
         state = state["model"]
