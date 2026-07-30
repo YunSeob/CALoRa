@@ -38,7 +38,7 @@ import numpy as np
 import torch
 from scipy.io import loadmat
 
-from model import PreambleDetector, best_interval_from_p, metrics_from_counts
+from models.model_components import PreambleDetector, best_interval_from_p, metrics_from_counts
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Constants

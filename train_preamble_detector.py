@@ -34,7 +34,7 @@ import torch.nn as nn
 from scipy.io import loadmat
 from torch.utils.data import DataLoader, Dataset
 
-from model import PreambleDetector, SoftIoU, metrics_from_probs
+from models.model_components import PreambleDetector, SoftIoU, metrics_from_probs
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Constants
